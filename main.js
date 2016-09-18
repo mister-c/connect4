@@ -6,6 +6,10 @@ var controller;
 game = new Phaser.Game(800, 600, Phaser.CANVAS, "", {preload: preload, create: create, update: update, render: render});
 controller = new Controller();
 
+function sleep(time){
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 function preload(){
     // This game dun use no sprites
     // so FUCK this function

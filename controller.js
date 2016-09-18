@@ -18,6 +18,9 @@ function Controller() {
     instance.p2_color    = 0x00ff00;
     instance.bkg_color   = 0x000000;
 
+    // Delay in milliseconds
+    instance.ai_chip_cycle_delay = 100;
+
     // Instance methods
 
     instance.setupBoard = function(){
@@ -28,9 +31,6 @@ function Controller() {
 	board_g = window.board_g;
 	board   = board_g.getChildAt(0);
 	board.createPhantomChip();
-
-	board.p1_color = instance.p1_color;
-	board.p2_color = instance.p1_color;
     }
     
     instance.checkWin = function(){
@@ -190,7 +190,7 @@ function Controller() {
 
 	board = window.board_g.getChildAt(0);
 	
-	if(board.phantom_chip && board.phantom_chip.is_ready == true){
+	if(board.phantom_chip && board.phantom_chip.is_ready == true & instance.player_turn == "meatbag"){
 	    board = board_g.getChildAt(0);
 	    board.dropChip(instance.getCursorColumnIndex(), "R");
 	}
@@ -211,16 +211,58 @@ function Controller() {
 	instance.turn();
     }
 
+    instance.setPlayerTurn = function(player){
+	if(player == "meatbag"){
+	    instance.player_turn = "meatbag";
+	    board.phantom_chip.texture = board.phantom_chip.texture_p1;
+	} else{
+	    instance.player_turn = "geniusai";
+	    board.phantom_chip.texture = board.phantom_chip.texture_p2;
+	}
+    }
+    
+    instance.aiChipCycle = function(num_cycle){
+    	var board;
+
+    	board = window.board_g.getChildAt(0);
+	console.log("calling aiChipCycle()....");
+
+	// Good version....
+	board.phantom_chip.x = (((board.phantom_chip.x - board_g.x) + board.chip_size) % (board.chip_size * board.num_column)) + board_g.x;
+	
+    	// board.phantom_chip.x = (((board.phantom_chip.x - board_g.x) + board.chip_size) % board.width) + board_g.x;
+	
+    	if(num_cycle == 0){
+	    instance.aiDropChip();
+	    instance.player_turn == "meatbag";
+    	    return;
+    	}
+
+	sleep(instance.ai_chip_cycle_delay).then(() => {
+	    instance.aiChipCycle(num_cycle - 1);
+	});
+    	// setTimeout(instance.aiChipCycle(num_cycle - 1), 1000);
+    }
+
+    instance.aiDropChip = function(){
+    	var board;
+
+    	board = window.board_g.getChildAt(0);
+	
+	board.dropChip(((((board.phantom_chip.x - board_g.x) + board.chip_size) / board.chip_size) - 1), "Y");
+    }
+
     instance.turn = function(){
 	if(instance.player_turn == "meatbag"){
-	    instance.player_turn = "geniusai";
+	    instance.setPlayerTurn("geniusai");
 	} else{
-	    instance.player_turn = "meatbag";
+	    instance.setPlayerTurn("meatbag");
 	}
 
 	if(instance.player_turn == "geniusai"){
-	    board.phantom_chip.texture = board.phantom_chip.texture_p2;
-	    
+	    sleep(instance.chip_cycle_delay).then(() => {
+		instance.aiChipCycle(10);
+	    });
 	}
     }
 

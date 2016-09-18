@@ -101,8 +101,8 @@ function initBoard(){
     board_g.add(board);
     board.z = 2;
 
-    board.p1_color = 0xff0000;
-    board.p2_color = 0x00ff00;
+    board.p1_color = controller.p1_color;
+    board.p2_color = controller.p2_color;
 
     // Create a invisible box at the bottom of the board so the chips don't slip
     // through and fall off the screen
@@ -203,7 +203,7 @@ function initBoard(){
 	var chip_arr;
 
 	var top_chip_index;
-	
+
 	board = window.board_g.getChildAt(0);
 	chip_arr = board.chip_arr;
 
