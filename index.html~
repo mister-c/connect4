@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>I guess this is A game or something? fuckfh I dont know</title>
+
+    <script>
+      function load_ext_script(name){
+          var bodyEl;
+          var scriptEl;
+
+          bodyEl = document.body;
+          scriptEl = document.createElement("script");
+          scriptEl.type = "text/javascript";
+          scriptEl.src  = name;
+          bodyEl.appendChild(scriptEl);
+      }
+    </script>
+    
+    <script type="text/javascript" src="phaser.min.js"></script>
+    <script type="text/javascript" src="board.js"></script>
+    <script type="text/javascript" src="controller.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    
+    <style>
+      body {
+      margin: 0;
+      }
+    </style>
+  </head>
+
+  <body onload=load_ext_script("load_script.js")>
+  </body>
+  
+</html>

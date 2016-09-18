@@ -1,0 +1,7 @@
+function Controller() {
+    var instance;
+
+    Controller = function(){
+	
+    }
+}

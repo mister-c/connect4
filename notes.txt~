@@ -1,0 +1,21 @@
+What you have left to do
+
+You need to find out how to cut out shapes from other shapes
+Is this the same thing as a mask?
+
+You have created a way for the game chip to fall from the top of the screen
+You have a way to use phaser's integrated rendering to create a sprite from a rendering of a red circle
+
+You have a data structure to represent the grid of chips
+
+
+For now...
+Have the animation of the falling chips occur
+Use collisions so the chips land in roughly the correct location on the grid when they are placed
+
+
+To improve....
+Have the animation of the falling chips occur
+Have a boolean that represents if the object is or is not being animated
+Once the object stops moving then force its coordinates to the correct location on the grid
+If the animation takes too long, it should time out and the coordinates should be forced to the correct location on the grid

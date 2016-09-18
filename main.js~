@@ -1,0 +1,258 @@
+// Connect Four is a game where you try to drop 4 chips in a row that connect
+
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, "", {preload: preload, create: create, update: update, render: render});
+
+function checkWin(){
+    var board;
+    var chip_string;
+
+    var i;
+    var j;
+    
+    board = window.board_g.getChildAt(0);
+
+    // Check vertical wins
+    for (var i = 0; i < board.chip_arr.length; i++){
+    	chip_string = "";
+    	for (var j = 0; j < board.chip_arr[i].length; j++){
+    	    chip_string += board.chip_arr[i][j].color;
+    	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+    // Check horizontal wins
+    // indexes i and j are flipped here CONFUSINGING!??!
+    for (var i = 0; i < board.num_row; i++){
+	chip_string = "";
+	for(var j = 0; j < board.num_column; j++){
+	    chip_string += board.chip_arr[j][i].color;
+	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+    
+    // Check for diagnol 1: NW to SE - bottom
+
+    // Initalize our variables for iterating diagnols
+    i = 0;
+    j = 0;
+
+    for (var diag_index = 0; diag_index < board.num_row; diag_index ++){
+    	i = 0;
+    	j = diag_index;
+	
+    	chip_string = "";
+	
+    	while (i < board.num_column && j < board.num_row){
+    	    chip_string += board.chip_arr[i][j].color;
+	    
+    	    i++;
+    	    j++;
+    	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+
+    // Check for diagnol 2: NW to SE - top
+    
+    for (var diag_index = 0; diag_index < board.num_column; diag_index++){
+    	i = diag_index;
+    	j = 0;
+	
+    	chip_string = "";
+	
+    	while (i < board.num_column && j < board.num_row){
+    	    chip_string += board.chip_arr[i][j].color;
+	    
+    	    i++;
+    	    j++;
+    	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+    
+    // Check for diagnol 3: SW to NE - top
+
+    for (var diag_index = (board.num_row - 1); diag_index > -1; diag_index --){
+    	i = 0;
+    	j = diag_index;
+
+    	chip_string = "";
+
+    	while(i < board.num_column && j > -1){
+    	    chip_string += board.chip_arr[i][j].color;
+
+    	    i++;
+    	    j--;
+    	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+    
+    // Check for diagnol 4: SW to NE - bottom
+
+    for (var diag_index = 0; diag_index < board.num_column; diag_index++){
+	i = diag_index;
+	j = board.num_row - 1;
+
+	chip_string = "";
+
+	while(i < board.num_column && j > -1){
+	    chip_string += board.chip_arr[i][j].color;
+
+	    i++;
+	    j--;
+	}
+    	if(chip_string.match("R{4}|Y{4}") != null){
+    	    console.log("its a win!");
+    	}
+    }
+}
+
+function movePhantomChip(i){
+    var board;
+
+    board = board_g.getChildAt(0);
+
+    board.phantom_chip.x = board_g.x + board.chip_size * i;
+    
+}
+
+function getCursorColumnIndex(){
+    var board;
+
+    board = board_g.getChildAt(0);
+    
+    if((game.input.activePointer.position.x < board_g.x + (board.width / board.num_column)) &&
+       (game.input.activePointer.position.x > -1)){
+	return 0;
+    }
+    if(game.input.activePointer.position.x < game.width &&
+       (game.input.activePointer.position.x > board_g.x + (board.width / board.num_column) * (board.num_column - 1))){
+	return board.num_column - 1;
+    }
+    // Next, check all the inner-most columns
+    for(var i = 1; i < board.num_column - 1; i ++){
+	   
+	if((game.input.activePointer.position.x < board_g.x + (board.width / board.num_column) * (i + 1)) &&
+	   (game.input.activePointer.position.x > board_g.x + (board.width / board.num_column) * i)
+	  ){
+	    return i;
+	}
+    }
+
+    
+}
+
+function columnPointerOver(){
+    var board;
+
+    board = board_g.getChildAt(0);
+
+    movePhantomChip(getCursorColumnIndex());
+
+    // // First, check the 2 outter-most columns
+    // if((game.input.activePointer.position.x < board_g.x + (board.width / board.num_column)) &&
+    //    (game.input.activePointer.position.x > 0)){
+    // 	movePhantomChip(0);
+    // }
+    // if(game.input.activePointer.position.x < game.width &&
+    //    (game.input.activePointer.position.x > board_g.x + (board.width / board.num_column) * (board.num_column - 1))){
+    // 	movePhantomChip(board.num_column - 1);
+    // }
+
+    // // Next, check all the inner-most columns
+    // for(var i = 1; i < board.num_column - 1; i ++){
+	   
+    // 	if((game.input.activePointer.position.x < board_g.x + (board.width / board.num_column) * (i + 1)) &&
+    // 	   (game.input.activePointer.position.x > board_g.x + (board.width / board.num_column) * i)
+    // 	  ){
+    // 	    movePhantomChip(i);
+    // 	}
+    // }
+}
+
+function dropClick(){
+    var board;
+
+    board = board_g.getChildAt(0);
+    board.dropChip(getCursorColumnIndex(), "R");
+    board.phantom_chip.visible = false;
+}
+
+function createClickHandler(){
+    game.input.onDown.add(dropClick, this);
+}
+
+//==================================================
+
+function preload(){
+    // This game dun use no sprites
+    // so FUCK this function
+
+    // It probably will later though...
+}
+
+function create(){
+    var circle_graphics;
+    
+    var board;
+    var board_g;
+
+    game.stage.backgroundColor = "#000000";
+    
+    // Rev up those physics
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    // Create the game board
+    initBoard();
+
+    // Create the phantom chip
+    board_g = window.board_g;
+    board   = board_g.getChildAt(0);
+    board.createPhantomChip();
+
+    createClickHandler();
+    
+    // board_g = window.board_g();
+    // board   = board_g.getChildAt(0);
+
+    // Set the gravity level and sort the sprites
+    game.physics.arcade.gravity.y = 900;
+    game.world.sort(0, Phaser.Group.SORT_ASCENDING);
+    
+    // // Use globals.... sigh
+    // window.board_g = board_g;
+}
+
+function update(){
+    var bottom_bound_box;
+    var board;
+    
+    bottom_bound_box = window.board_g.getChildAt(1);
+    board = window.board_g.getChildAt(0);
+
+    if(board.activeChip){
+	game.physics.arcade.collide(bottom_bound_box, board.activeChip, board.chipCollide);
+	game.physics.arcade.collide(board.chip_g.children, board.activeChip, board.chipCollide);
+    }
+
+    columnPointerOver();
+}
+
+function render(){
+    var bottom_bound_box;
+    var board;
+
+    bottom_bound_box = window.board_g.getChildAt(1);
+    board = window.board_g.getChildAt(0);
+    
+    // game.debug.spriteBounds(bottom_bound_box);
+    // game.debug.spriteBounds(board.chip_g);
+    // game.debug.spriteBounds(board.phantom_chip);
+}

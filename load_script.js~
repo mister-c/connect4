@@ -1,0 +1,3 @@
+load_ext_script("phaser.min.js");
+load_ext_script("main.js");
+load_ext_script("board.js");
