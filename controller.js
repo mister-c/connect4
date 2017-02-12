@@ -22,7 +22,6 @@ function Controller() {
     instance.ai_chip_cycle_delay = 100;
 
     // Instance methods
-
     instance.setupBoard = function(){
 	game.stage.backgroundColor = instance.bkg_color;
 	
@@ -74,7 +73,7 @@ function Controller() {
     	    i = 0;
     	    j = diag_index;
 	    
-    	    chip_string = "";
+    	    chip_string = ";"
 	    
     	    while (i < board.num_column && j < board.num_row){
     		chip_string += board.chip_arr[i][j].color;
