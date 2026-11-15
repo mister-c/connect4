@@ -146,6 +146,17 @@ function Controller() {
         return false;
     }
 
+    instance.checkDraw = function(){
+        var board = window.board_g.getChildAt(0);
+        for(var c = 0; c < board.num_column; c++){
+            for(var r = 0; r < board.num_row; r++){
+                if(board.chip_arr[c][r].color == "*") return false;
+            }
+        }
+        // A winning final chip takes precedence over a full-board draw.
+        return !instance.checkWin();
+    }
+
     instance.getCursorColumnIndex = function(){
     	var board;
 
@@ -337,6 +348,13 @@ function Controller() {
             instance.game_over = true;
             window.board_g.getChildAt(0).setPhantomChipDrop(false);
             console.log("its a win!");
+            return;
+        }
+
+        if(instance.checkDraw()){
+            instance.game_over = true;
+            window.board_g.getChildAt(0).setPhantomChipDrop(false);
+            console.log("its a draw!");
             return;
         }
 
