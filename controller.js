@@ -14,6 +14,7 @@ function Controller() {
 
     // Instance variables
     instance.player_turn = "meatbag";
+    instance.game_over = false;
     instance.p1_color    = 0xff0000;
     instance.p2_color    = 0x00ff00;
     instance.bkg_color   = 0x000000;
@@ -48,7 +49,7 @@ function Controller() {
     		chip_string += board.chip_arr[i][j].color;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
     	// Check horizontal wins
@@ -59,7 +60,7 @@ function Controller() {
     		chip_string += board.chip_arr[j][i].color;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
 	
@@ -82,7 +83,7 @@ function Controller() {
     		j++;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
 
@@ -101,7 +102,7 @@ function Controller() {
     		j++;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
 	
@@ -120,7 +121,7 @@ function Controller() {
     		j--;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
 	
@@ -139,9 +140,10 @@ function Controller() {
     		j--;
     	    }
     	    if(chip_string.match("R{4}|Y{4}") != null){
-    		console.log("its a win!");
+            return true;
     	    }
     	}
+        return false;
     }
 
     instance.getCursorColumnIndex = function(){
@@ -189,7 +191,7 @@ function Controller() {
 
 	board = window.board_g.getChildAt(0);
 	
-	if(board.phantom_chip && board.phantom_chip.is_ready == true & instance.player_turn == "meatbag"){
+	if(!instance.game_over && board.phantom_chip && board.phantom_chip.is_ready && instance.player_turn == "meatbag"){
 	    board = board_g.getChildAt(0);
 	    board.dropChip(instance.getCursorColumnIndex(), "R");
 	}
@@ -307,6 +309,7 @@ function Controller() {
     }
 
     instance.aiChipCycle = function(num_cycle){
+        if(instance.game_over) return;
         var board = window.board_g.getChildAt(0);
         if(num_cycle == 0){
             instance.aiDropChip();
@@ -320,6 +323,7 @@ function Controller() {
     }
 
     instance.aiDropChip = function(){
+        if(instance.game_over) return;
         var board = window.board_g.getChildAt(0);
         var column = instance.selectAiColumn(board);
         if(column === null) return; // A full board has no legal move.
@@ -328,6 +332,14 @@ function Controller() {
     }
 
     instance.turn = function(){
+        if(instance.game_over) return;
+        if(instance.checkWin()){
+            instance.game_over = true;
+            window.board_g.getChildAt(0).setPhantomChipDrop(false);
+            console.log("its a win!");
+            return;
+        }
+
 	if(instance.player_turn == "meatbag"){
 	    instance.setPlayerTurn("geniusai");
 	} else{
