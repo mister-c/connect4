@@ -220,35 +220,111 @@ function Controller() {
 	}
     }
     
+    // Search a copy of the board so simulated moves never affect live sprites.
+    instance.selectAiColumn = function(board){
+        var cells = board.chip_arr.map(function(column){
+            return column.map(function(chip){ return chip.color; });
+        });
+        var columns = cells.length;
+        var rows = board.num_row;
+        var order = [];
+        var directions = [[1, 0], [0, 1], [1, 1], [1, -1]];
+        for(var c = 0; c < columns; c++) order.push(c);
+        order.sort(function(a, b){
+            return Math.abs(a - (columns - 1) / 2) - Math.abs(b - (columns - 1) / 2);
+        });
+
+        function landingRow(column){
+            for(var r = rows - 1; r >= 0; r--){
+                if(cells[column][r] == "*") return r;
+            }
+            return -1;
+        }
+
+        // Score every possible four-cell line, including both diagonals.
+        function evaluate(depth){
+            var score = 0;
+            for(var c = 0; c < columns; c++){
+                for(var r = 0; r < rows; r++){
+                    if(cells[c][r] != "*"){
+                        score += (cells[c][r] == "Y" ? 1 : -1) *
+                            (columns - Math.abs(2 * c - columns + 1));
+                    }
+                    for(var d = 0; d < directions.length; d++){
+                        var dx = directions[d][0], dy = directions[d][1];
+                        var endC = c + dx * 3, endR = r + dy * 3;
+                        if(endC >= columns || endR < 0 || endR >= rows) continue;
+                        var yellow = 0, red = 0;
+                        for(var i = 0; i < 4; i++){
+                            var color = cells[c + dx * i][r + dy * i];
+                            if(color == "Y") yellow++;
+                            if(color == "R") red++;
+                        }
+                        // Prefer earlier wins and delay unavoidable losses.
+                        if(yellow == 4) return 1000000 + depth;
+                        if(red == 4) return -1000000 - depth;
+                        if(red == 0) score += [0, 1, 10, 100][yellow];
+                        if(yellow == 0) score -= [0, 1, 10, 120][red];
+                    }
+                }
+            }
+            return score;
+        }
+
+        function search(depth, maximizing, alpha, beta){
+            var score = evaluate(depth);
+            if(depth == 0 || Math.abs(score) >= 1000000) return score;
+            var best = maximizing ? -Infinity : Infinity;
+            var hasMove = false;
+            for(var i = 0; i < order.length; i++){
+                var column = order[i], row = landingRow(column);
+                if(row < 0) continue;
+                hasMove = true;
+                cells[column][row] = maximizing ? "Y" : "R";
+                var value = search(depth - 1, !maximizing, alpha, beta);
+                cells[column][row] = "*";
+                best = maximizing ? Math.max(best, value) : Math.min(best, value);
+                if(maximizing) alpha = Math.max(alpha, best);
+                else beta = Math.min(beta, best);
+                if(alpha >= beta) break;
+            }
+            return hasMove ? best : 0;
+        }
+
+        var bestColumn = null, bestScore = -Infinity;
+        for(var i = 0; i < order.length; i++){
+            var column = order[i], row = landingRow(column);
+            if(row < 0) continue;
+            cells[column][row] = "Y";
+            var score = search(4, false, bestScore, Infinity);
+            cells[column][row] = "*";
+            if(score > bestScore){
+                bestScore = score;
+                bestColumn = column;
+            }
+        }
+        return bestColumn;
+    }
+
     instance.aiChipCycle = function(num_cycle){
-    	var board;
-
-    	board = window.board_g.getChildAt(0);
-	console.log("calling aiChipCycle()....");
-
-	// Good version....
-	board.phantom_chip.x = (((board.phantom_chip.x - board_g.x) + board.chip_size) % (board.chip_size * board.num_column)) + board_g.x;
-	
-    	// board.phantom_chip.x = (((board.phantom_chip.x - board_g.x) + board.chip_size) % board.width) + board_g.x;
-	
-    	if(num_cycle == 0){
-	    instance.aiDropChip();
-	    instance.player_turn == "meatbag";
-    	    return;
-    	}
-
-	sleep(instance.ai_chip_cycle_delay).then(() => {
-	    instance.aiChipCycle(num_cycle - 1);
-	});
-    	// setTimeout(instance.aiChipCycle(num_cycle - 1), 1000);
+        var board = window.board_g.getChildAt(0);
+        if(num_cycle == 0){
+            instance.aiDropChip();
+            return;
+        }
+        board.phantom_chip.x = (((board.phantom_chip.x - board_g.x) + board.chip_size) %
+            (board.chip_size * board.num_column)) + board_g.x;
+        sleep(instance.ai_chip_cycle_delay).then(function(){
+            instance.aiChipCycle(num_cycle - 1);
+        });
     }
 
     instance.aiDropChip = function(){
-    	var board;
-
-    	board = window.board_g.getChildAt(0);
-	
-	board.dropChip(((((board.phantom_chip.x - board_g.x) + board.chip_size) / board.chip_size) - 1), "Y");
+        var board = window.board_g.getChildAt(0);
+        var column = instance.selectAiColumn(board);
+        if(column === null) return; // A full board has no legal move.
+        instance.movePhantomChip(column);
+        board.dropChip(column, "Y");
     }
 
     instance.turn = function(){
@@ -259,7 +335,7 @@ function Controller() {
 	}
 
 	if(instance.player_turn == "geniusai"){
-	    sleep(instance.chip_cycle_delay).then(() => {
+	    sleep(instance.ai_chip_cycle_delay).then(() => {
 		instance.aiChipCycle(10);
 	    });
 	}
